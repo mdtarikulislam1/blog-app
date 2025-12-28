@@ -6,6 +6,7 @@ const createPost = async (req: Request, res: Response) => {
     const result = await postService.createPost(req.body);
     res.status(201).json(result);
   } catch (error) {
+    console.log(error)
     res.status(401).json({
       error: "post creation faild",
       details: error,
