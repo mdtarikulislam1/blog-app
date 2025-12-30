@@ -43,10 +43,12 @@ export const auth = betterAuth({
     requireEmailVerification: true,
   },
   emailVerification: {
+    sendOnSignUp: true,
     sendVerificationEmail: async ({ user, url, token }, request) => {
-      const verificationUrl = `${process.env.APP_URL}/verify-email?token=${token}`;
+      try {
+        const verificationUrl = `${process.env.APP_URL}/verify-email?token=${token}`;
 
-      const htmlTemplate = `
+        const htmlTemplate = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -127,13 +129,23 @@ export const auth = betterAuth({
 </html>
 `;
 
-      console.log(user, url, token);
-      const info = await transporter.sendMail({
-        from: '"Prisma Blog" <prismablog@ethereal.email>',
-        to: user.email, // dynamic
-        subject: "Verify your email address",
-        html: htmlTemplate,
-      });
+        console.log(user, url, token);
+        const info = await transporter.sendMail({
+          from: '"Prisma Blog" <prismablog@ethereal.email>',
+          to: user.email, // dynamic
+          subject: "Verify your email address",
+          html: htmlTemplate,
+        });
+      } catch (error) {
+        console.log(error);
+        throw error;
+      }
+    },
+  },
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
   },
 });
