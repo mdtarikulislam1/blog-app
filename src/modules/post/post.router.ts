@@ -1,8 +1,11 @@
-import express, { Router } from 'express'
-import { PostControler } from './post.controller'
+import express, { Router } from "express";
+import { PostControler } from "./post.controller";
+import auth, { UserRole } from "../../middleware/auth";
 
-const router = express.Router()
+const router = express.Router();
 
-router.post('/',PostControler.createPost)
+router.get("/",auth(UserRole.ADMIN,UserRole.USER),PostControler.getAllPost)
 
-export const postRouter:Router = router
+router.post("/", auth(UserRole.ADMIN, UserRole.USER), PostControler.createPost);
+
+export const postRouter: Router = router;
