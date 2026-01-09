@@ -16,4 +16,6 @@ router.post(
     PostController.createPost
 )
 
-export const postRouter: Router = router;
+router.get("/:id",PostController.getPostById)
+
+export const postRouter: Router = router; 
