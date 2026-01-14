@@ -23,6 +23,9 @@ router.patch(
   CommentController.updateComment
 );
 
+// update comment status
+router.patch("/update/comment/status/:id", auth(UserRole.ADMIN),CommentController.moderateComment);
+
 // create comment
 router.post(
   "/",

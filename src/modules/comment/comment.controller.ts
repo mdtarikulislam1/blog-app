@@ -103,10 +103,35 @@ const updateComment = async (req: Request, res: Response) => {
   }
 };
 
+
+// delete comment
+const moderateComment = async (req: Request, res: Response) => {
+  try {
+    // const user = req.user;
+    const { id } = req.params;
+     
+    const result = await CommentService.moderateComment(
+      id as string,req.body
+    );
+    res.status(200).json({
+      success: true,
+      result,
+      message: "comment update success",
+    });
+  } catch (err:any) {
+    res.status(201).json({
+      success: false,
+      message: err.message || "comment update faild",
+      details: err,
+    });
+  }
+};
+
 export const CommentController = {
   createComment,
   getCommentById,
   getCommentByAuthor,
   deleteComment,
-  updateComment
+  updateComment,
+  moderateComment
 };
