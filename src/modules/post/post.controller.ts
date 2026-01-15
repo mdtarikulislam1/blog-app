@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { postService } from "./post.service";
 import { PostStatus } from "../../../generated/prisma/enums";
 import paginationSortingHelper from "../../helper/paginationSortingHelper";
+import { UserRole } from "../../middleware/auth";
 
 const createPost = async (req: Request, res: Response) => {
   try {
@@ -70,8 +71,8 @@ const getAllPost = async (req: Request, res: Response) => {
 const getPostById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    if(!id){
-      throw new Error("Post Id is required!")
+    if (!id) {
+      throw new Error("Post Id is required!");
     }
     const result = await postService.getPostById(id);
     res.status(200).json({
@@ -86,8 +87,48 @@ const getPostById = async (req: Request, res: Response) => {
   }
 };
 
+const getMyPost = async (req: Request, res: Response) => {
+  try {
+    console.log(req.user?.id);
+    const result = await postService.getMyPost(req.user?.id as string);
+    res.status(201).json({
+      success: false,
+      result,
+    });
+  } catch (err) {
+    res.status(401).json({
+      success: false,
+      err,
+    });
+  }
+};
+
+const updatePost = async (req: Request, res: Response) => {
+  try {
+    const { postId } = req.params;
+    const isAdmin = req.user?.role  === UserRole.ADMIN
+    const result = await postService.updatePost(
+      postId as string,
+      req.body,
+      req.user?.id as string,isAdmin
+    );
+    res.status(201).json({
+      success:true,
+      result
+    })
+  } catch (err) {
+    res.status(401).json({
+      status: false,
+      details: err,
+      message:"post update faid"
+    });
+  }
+};
+
 export const PostController = {
   createPost,
   getAllPost,
   getPostById,
+  getMyPost,
+  updatePost
 };

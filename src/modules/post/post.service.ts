@@ -104,9 +104,9 @@ const getAllPost = async ({
     orderBy: {
       [sortBy]: sortOrder,
     },
-    include:{
-      _count:{select:{comments:true}}
-    }
+    include: {
+      _count: { select: { comments: true } },
+    },
   });
   const totalData = await prisma.post.count({
     where: {
@@ -146,7 +146,7 @@ const getPostById = async (id: string) => {
             parentId: null,
             status: CommentStatus.APPROVED,
           },
-          orderBy:{createdAt:"desc"},
+          orderBy: { createdAt: "desc" },
           include: {
             replies: {
               where: {
@@ -160,27 +160,82 @@ const getPostById = async (id: string) => {
                   where: {
                     status: CommentStatus.APPROVED,
                   },
-                  orderBy:{
-                    createdAt:"asc"
-                  }
+                  orderBy: {
+                    createdAt: "asc",
+                  },
                 },
               },
             },
           },
         },
-        _count:{
-          select:{comments:true}
+        _count: {
+          select: { comments: true },
         },
       },
-    
     });
     return postData;
   });
   return result;
 };
 
+const getMyPost = async (authorId: string) => {
+  const result = await prisma.post.findMany({
+    where: {
+      authorId,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      _count: {
+        select: {
+          comments: true,
+        },
+      },
+    },
+  });
+
+  const total = await prisma.post.aggregate({
+    where: {
+      authorId,
+    },
+    _count: {
+      id: true,
+    },
+  });
+  return {
+    data: result,
+    count: total,
+  };
+};
+
+type UpdatePostData = Omit<Post, "id" | "authorId" | "createdAt" | "updatedAt">
+
+
+const updatePost = async (
+  postId: string,
+  data: Partial<UpdatePostData>,
+  authorId: string,isAdmin:boolean
+) => {
+  const postData = await prisma.post.findFirstOrThrow({
+    where: { id: postId },
+    select: { id: true, authorId: true },
+  });
+
+  if ( !isAdmin && postData.authorId !== authorId  ) {
+    throw new Error("You are not the owner/creator of the post");
+  }
+
+  return prisma.post.update({
+    where: { id: postData.id },
+    data,
+  });
+};
+
 export const postService = {
   createPost,
   getAllPost,
   getPostById,
+  getMyPost,
+  updatePost,
 };
