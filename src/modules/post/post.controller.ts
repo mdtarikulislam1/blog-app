@@ -3,6 +3,7 @@ import { postService } from "./post.service";
 import { PostStatus } from "../../../generated/prisma/enums";
 import paginationSortingHelper from "../../helper/paginationSortingHelper";
 import { UserRole } from "../../middleware/auth";
+import { boolean } from "better-auth/*";
 
 const createPost = async (req: Request, res: Response) => {
   try {
@@ -106,29 +107,69 @@ const getMyPost = async (req: Request, res: Response) => {
 const updatePost = async (req: Request, res: Response) => {
   try {
     const { postId } = req.params;
-    const isAdmin = req.user?.role  === UserRole.ADMIN
+    const isAdmin = req.user?.role === UserRole.ADMIN;
     const result = await postService.updatePost(
       postId as string,
       req.body,
-      req.user?.id as string,isAdmin
+      req.user?.id as string,
+      isAdmin
     );
     res.status(201).json({
-      success:true,
-      result
-    })
+      success: true,
+      result,
+    });
   } catch (err) {
     res.status(401).json({
       status: false,
       details: err,
-      message:"post update faid"
+      message: "post update faid",
     });
   }
 };
+
+const deletePost = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const isAdmin = req.user?.role === UserRole.ADMIN;
+
+    const result = await postService.deletePost(id as string, req.user!.id, isAdmin);
+
+    res.status(200).json({
+      success: true,
+      details: result,
+      message: "Post deleted successfully",
+    });
+  } catch (err: any) {
+    res.status(403).json({
+      success: false,
+      message: err.message || "Post delete failed",
+    });
+  }
+};
+
+const getStats = async (req:Request,res:Response)=>{
+   try{
+   const result = await postService.getStats()
+   res.status(201).json({
+    message:"getstats success",
+    success:true,
+    data:result
+   })
+   } catch(err){
+     res.status(401).json({
+      success:false,
+      message:"get stats faild",
+      details:err
+     })
+   }
+}
 
 export const PostController = {
   createPost,
   getAllPost,
   getPostById,
   getMyPost,
-  updatePost
+  updatePost,
+  deletePost,
+  getStats
 };

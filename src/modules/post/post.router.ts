@@ -5,6 +5,7 @@ import auth, { UserRole } from "../../middleware/auth";
 const router = express.Router();
 
 router.get("/", PostController.getAllPost);
+router.get("/stats",auth(UserRole.ADMIN), PostController.getStats);
 
 router.post(
   "/",
@@ -16,6 +17,9 @@ router.get("/myPost",auth(UserRole.ADMIN,UserRole.USER), PostController.getMyPos
 
 // update own post
 router.patch("/updatePost/:postId", auth(UserRole.ADMIN,UserRole.USER),PostController.updatePost) 
+
+// delete post 
+router.delete("/delete/:id",auth(UserRole.ADMIN,UserRole.USER),PostController.deletePost)
 
 router.get("/:id", PostController.getPostById);
 
